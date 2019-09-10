@@ -10,7 +10,7 @@ export default class URLIn extends React.Component{
             <label>
               URL:<input type="url" className="YoutubeID" value={this.props.value} onChange={()=>this.props.handlechange(event.target.value)} />
             </label>
-          <Link to='/about' onClick={() => this.props.handleclick(this.props.value)}><button>送信</button></Link>
+          <Link to='/YoutubeDisplay' onClick={() => this.props.handleclick(this.props.value)}><button>送信</button></Link>
         </div>
       );
     }

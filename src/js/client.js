@@ -24,16 +24,15 @@ class Contents extends React.Component {
   render() {
     return (
             <BrowserRouter>
-              <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
-              <script type="text/javascript" id="www-widgetapi-script" src="https://s.ytimg.com/yts/jsbin/www-widgetapi-vfl5fd9gV/www-widgetapi.js" async=""></script>
               <h2><p>Youtube語学勉強</p></h2>
+              
+              <p>https://www.youtube.com/watch?v=HPgQ-Vlt2Pw</p>
               <Route exact path='/'  render={() => <URLIn handlechange={this.handleChange} handleclick={this.handleClick} value = {this.state.value} />} />
-              <Route exact path='/about' render={() => <YoutubeDisplay value = {this.state.value} />} />
+              <Route exact path='/YoutubeDisplay' render={() => <YoutubeDisplay value = {this.state.value} />} />
             </BrowserRouter>
 
     );
   }
 }
-
 ReactDOM.render(
   <Contents />, document.getElementById('root'));

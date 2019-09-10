@@ -1,14 +1,65 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>React Tutorials</title>
-    <!-- change this up! http://www.bootstrapcdn.com/bootswatch/ -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/cosmo/bootstrap.min.css" type="text/css" rel="stylesheet"/>
-  </head>
 
-  <body>
-    <div id="root"></div>
-    <script src="client.min.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <title>React Tutorials</title>
+  <!-- change this up! http://www.bootstrapcdn.com/bootswatch/ -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/cosmo/bootstrap.min.css" type="text/css"
+    rel="stylesheet" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="text/javascript" id="www-widgetapi-script" src="ここにAPIのurl" async=""></script>
+
+  <script>
+    var OAUTH2_CLIENT_ID = '289138767643-mn2652ji7fgsm9io641an45vn3h92sq4.apps.googleusercontent.com';
+    var OAUTH2_SCOPES = [
+      // Manage your YouTube account
+      'https://www.googleapis.com/auth/youtube',
+      // Manage your YouTube account
+      'https://www.googleapis.com/auth/youtube.force-ssl',
+      // View your YouTube account
+      'https://www.googleapis.com/auth/youtube.readonly',
+      // Manage your YouTube videos
+      'https://www.googleapis.com/auth/youtube.upload',
+      // View and manage your assets and associated content on YouTube
+      'https://www.googleapis.com/auth/youtubepartner',
+      // View private information of your YouTube channel relevant during the audit process with a YouTube partner
+      'https://www.googleapis.com/auth/youtubepartner-channel-audit',
+    ];
+    //checkAuthが終わらなかった場合のエラー表示
+    googleApiClientReady = () => {
+      gapi.auth.init(() => {
+        console.log("++++++++++++++++");
+        window.setTimeout(checkAuth, 1);
+      });
+    }
+    //ここでアクセス権限を確かめる
+    async function checkAuth() {
+      //ここで確かめimmediateがtrueにすると承認が済んでいる場合に通る
+      try {
+        await gapi.auth.authorize({
+          client_id: OAUTH2_CLIENT_ID,
+          scope: OAUTH2_SCOPES,
+          immediate: true
+        });
+        console.log("OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        loadAPIClientInterfaces();
+      } catch (authResult) {
+        //承認されない場合はfalseにして認証する
+        console.log("error");
+        gapi.auth.authorize({
+          client_id: OAUTH2_CLIENT_ID,
+          scope: OAUTH2_SCOPES,
+          immediate: false
+        });
+      }
+    }
+  </script>
+  <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
+  <script src="client.min.js"></script>
+</body>
+
 </html>
