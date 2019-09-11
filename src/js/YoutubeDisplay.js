@@ -1,14 +1,16 @@
 //importとglobal変数の定義
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Route,BrowserRouter,Link} from 'react-router-dom';
+import {Route,BrowserRouter,Link,withRouter} from 'react-router-dom';
+import {Form,FormGroup,FormControl,Button, ButtonToolbar,InputGroup,Row,Col} from 'react-bootstrap';
 import YouTube from 'react-youtube';
+import "../css/Content.css";
 let caption = "";
 let TimeData = [];
 let TextData;
-let start;
+//let start;
 //YoutubeDisplayのclass (動画の表示と字幕情報を取ってきて編集し表示)
-export default class YoutubeDisplay extends React.Component {
+class YoutubeDisplay extends React.Component {
     //非同期処理(Youtube字幕取得)
     componentWillMount() {
         gapi.client.load('youtube', 'v3',  () => {this.GetCaption();});
@@ -35,8 +37,10 @@ export default class YoutubeDisplay extends React.Component {
         answer: "",
         userAnswer: "",
         play:0,
+        EndFlag: 0,
+        correct: 0,
       }
-      start = this.state.start;
+      //start = this.state.start;
       //setStateを用いるメソッドをbindしておく
       this.Changedata = this.Changedata.bind(this);
       this.Change = this.Change.bind(this);
@@ -45,6 +49,8 @@ export default class YoutubeDisplay extends React.Component {
     async GetCaption() {
         //字幕を入れる変数
         let en_caption ="";
+        TimeData = [];
+        TextData = [];
         //字幕のinfoリストを取得
         let request;
         request = await gapi.client.youtube.captions.list({
@@ -70,62 +76,52 @@ export default class YoutubeDisplay extends React.Component {
         }
         //caption.bodyをcaptionに入れる(これが字幕の内容)
         caption =caption.body;
+        console.log(caption);
+        //一時的にTextを保持する変数
+        let TextDataAll = [];
         //captionを\n\nで区切る(これで一つの字幕の本文と時間を取得できる)
         TextData = caption.split("\n\n").map(item => {
             //console.log("item----"+item);
             //\nで区切る（これにより始まる時間、終わりの時間、文章というように分割できる）
-            return item.split("\n").map(item2 => {
-              //console.log("item2--------" + item2);
-              return item2.split(",");
-            });
+            return item.split("\n");
           });
-          //一時的にTextを保持する変数
-          let TextDataAll = [];
           //TextData分繰り返す(これにより、全テキストデータにたいし処理を行う)<=ここ上記のmap内に入れられん？
           for(let i = 0;i<TextData.length;i++){
-              //TextDataの時間要素が空白ではない場合
-            if(TextData[i][0][0] != ""){
-                //時間をTimeDataに保持(["starttime","endtime"])
+            if(TextData[i][0] != ""){
               TimeData.push(TextData[i][0]);
             }
-            //文章データをTextDataAllに入れる(["content"])
-              TextDataAll.push(TextData[i][1]);
+            TextDataAll.push(TextData[i][1]);
           }
-          //undifinedを削除
+          console.log(TimeData);
           TextDataAll = TextDataAll.filter(v => v);
-          //TimeDataを秒数の整数に変換する。
           TimeData = TimeData.map(item => {
-            //console.log(item[0]);
-            //時間データStart => [hour,minutes,second]
-            let item0=item[0].toString().split(".")[0].split(":");
-            //時間データEnd => [hour,minutes,second]
-            let item1=item[1].toString().split(".")[0].split(":");
-            //[StartHour*360+StartMinutu*60+StartSeconds,EndHour*360+EndMinutu*60+EndSeconds+2]
-            return [parseInt(item0[0]*360)+parseInt(item0[1],10)*60+parseInt(item0[2],10),parseInt(item1[0]*360)+parseInt(item1[1],10)*60+parseInt(item1[2],10)+2];
+            console.log(item[0]);
+            let item0=item.split(",")[0].toString().split(".")[0].split(":");
+            let item1=item.split(",")[1].toString().split(".")[0].split(":");
+            return [parseInt(item0[0]*360)+parseInt(item0[1],10)*60+parseInt(item0[2],10),parseInt(item1[0]*360)+parseInt(item1[1],10)*60+parseInt(item1[2],10)+1];
           });
           //console.log(TimeData);
           //console.log(TextDataAll);
-          //TextDataを単語ごとにSplitする
-          let TextDataSplit = TextDataAll.map((item) => {
+          let TextDataSplit = [];
+          TextDataSplit = TextDataAll.map((item) => {
             if(item != undefined){
-              //console.log(item[0]);
-              return item[0].split(" ");
+              return item.split(" ");
             }
           });
-          //console.log(TextDataSplit);
-          //TextDataの初期化
           TextData = [];
-          
-          //console.log("=>"+TextDataSplit[0]);
-          //console.log("==>"+TextDataAll[0]);
-          //Randamな単語で文章をsplitし、answerとQuestionに分割する
+          let i = 0;
+          //console.log(TextDataSplit[0]);
           for(let i = 0;i<TextDataAll.length;i++){
             let answer ="";
             for(let j = 0; j<TextDataSplit[i].length;j++){
               let random = Math.floor(Math.random() * Math.floor(TextDataSplit[i].length));
               answer = TextDataSplit[i][random];
+              //console.log(answer);
             }
-            TextData.push([TextDataAll[i][0].split(answer),answer]);
+            //console.log(TextDataAll[i][0]);
+            if(TextDataAll[i] != undefined){
+              TextData.push([TextDataAll[i].split(answer),answer]);
+            }
           }
           //console.log(TextData);
           //setStateする(同時にできるんでない？)
@@ -135,6 +131,7 @@ export default class YoutubeDisplay extends React.Component {
           this.setState({startText: TextData[0][0][0]});
           this.setState({endText: TextData[0][0][1]});
           this.setState({answer: TextData[0][1]});
+          this.setState({EndFlag: TimeData.length});
           //return [TextData,TimeData];
     }
     //input内のデータが変わったらstateのuserAnswerを更新する
@@ -145,12 +142,24 @@ export default class YoutubeDisplay extends React.Component {
     Changedata(){
         //valを+1する
       this.val=this.val + 1;
+     
+      this.setState({EndFlag: (TimeData.length -1) - this.val});
+      console.log(this.state.EndFlag);
       //答えがあっているかの確認
       if(this.state.userAnswer == this.state.answer){
+          this.setState({correct: this.state.correct+1})
           alert("正解です");
       }else{
           alert("正解は"+this.state.answer+"です");
       }
+      //EndFlagで終わりの確認
+      if(this.state.EndFlag == 0){
+        //終わったら結果画面へ
+        this.props.ResultChange((this.state.correct/TimeData.length)*100)
+        this.props.history.push("/result");
+        return true;
+      }
+
       //次の状態にsetStateする
       this.setState({start: TimeData[this.val][0]});
       this.setState({end: TimeData[this.val][1]});
@@ -172,24 +181,47 @@ export default class YoutubeDisplay extends React.Component {
             end : this.state.end,
           }
         };
-      
+
+        if(!this.props.value.toString().match("v=")){
+          //URLが間違えである場合の処理
+          return(
+            <div>
+            <p>URLが適切ではありません。YoutubeのURLを入力してください。</p>
+            </div>
+          );
+        }
+        //正常な場合のリターン
         return (
           <div>
-          <YouTube
-            videoId={this.props.value.toString().split("v=")[1]}
-            opts={opts}
-            //onEnd={this._onEnd}
-          />
-          {this.state.startText}<input value = {this.state.userAnswer} onChange={()=>this.Change(event.target.value)}/>{this.state.endText}
-          <button onClick={() => this.Changedata()}>OK</button>
+            <YouTube
+              videoId={this.props.value.toString().split("v=")[1]}
+              opts={opts}
+              onEnd={this._onEnd}
+            />
+            <Form inline>
+              <FormGroup>
+                    {this.state.startText}
+
+                    <FormControl 
+                      value = {this.state.userAnswer} 
+                      onChange={()=>this.Change(event.target.value)}
+                      aria-describedby="basic-addon2"
+                      className="form-group"
+                    />
+                    {this.state.endText}
+                <Button onClick={() => this.Changedata()}>Enter</Button>
+              </FormGroup>
+            </Form>
           </div>
         );
     }
     //動画がEndした際の処理
     _onEnd(event) {
       // access to player in all event handlers via event.target
-      event.target.seekTo(start,true);
+      event.target.seekTo(0,false);
       event.target.stopVideo();
     }
 
   }
+
+  export default withRouter(YoutubeDisplay);

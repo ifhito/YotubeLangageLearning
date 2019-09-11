@@ -6,7 +6,8 @@ module.exports = {
   context: path.join(__dirname, "src"),
   entry: ['@babel/polyfill', './js/client.js'],
   module: {
-    rules: [{
+    rules: [
+      {
       test: /\.jsx?$/,
         exclude: /(node_modules|bower_components)/,
         use: [{
@@ -15,8 +16,10 @@ module.exports = {
             presets: ['@babel/preset-react', '@babel/preset-env']
           }
         }]
-      }]
+      },
+      { test: /\.css$/, loader: "style-loader!css-loader" }]
     },
+    
     output: {
       path: __dirname + "/src/",
       filename: "client.min.js"
