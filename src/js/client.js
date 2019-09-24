@@ -33,9 +33,9 @@ class Contents extends React.Component {
 
   render() {
     return (
+          <div>
             <BrowserRouter>
             <div className = "all">
-              <h2 className = "title"><p>Youtube語学勉強</p></h2>
               <div  className = "Content">
                 <Route exact path='/'  render={() => <URLIn handlechange={this.handleChange} handleclick={this.handleClick} value = {this.state.value} />} />
                 <Route exact path='/YoutubeDisplay' render={() => <YoutubeDisplay ResultChange={this.ResultChange} value = {this.state.value} />} />
@@ -43,6 +43,7 @@ class Contents extends React.Component {
               </div>
             </div>
             </BrowserRouter>
+          </div>
 
     );
   }

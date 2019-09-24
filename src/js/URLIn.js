@@ -10,7 +10,7 @@ export default class URLIn extends React.Component{
       return(
         
           <Form inline >
-          <p>https://www.youtube.com/watch?v=TdcegUsjYbc</p>
+          <div className = "title1">LearningTube</div>
             <FormGroup>
               <FormControl
                 placeholder="Recipient's username"

@@ -8,17 +8,24 @@ import "../css/Content.css";
 let caption = "";
 let TimeData = [];
 let TextData;
+
 //let start;
 //YoutubeDisplayのclass (動画の表示と字幕情報を取ってきて編集し表示)
 class YoutubeDisplay extends React.Component {
     //非同期処理(Youtube字幕取得)
-    componentWillMount() {
+    componentDidMount() {
         gapi.client.load('youtube', 'v3',  () => {this.GetCaption();});
       }
+    componentDidCatch(error) {
+      const element = <h1>Hello, world</h1>;
+      ReactDOM.render(element, document.getElementById('root'));
+    }
+
     //コンストラクタ
     constructor(props){
-        //React御約束
+      //React御約束
       super(props);
+      this.MovieID = this.props.value.toString().split("v=")[1].substr(0, 11);
       //のちにstateを書き変えるための数値
       this.val = 0;
       //state
@@ -45,6 +52,8 @@ class YoutubeDisplay extends React.Component {
       this.Changedata = this.Changedata.bind(this);
       this.Change = this.Change.bind(this);
     }
+
+
     //字幕を手に入れるためのメソッド
     async GetCaption() {
         //字幕を入れる変数
@@ -53,10 +62,16 @@ class YoutubeDisplay extends React.Component {
         TextData = [];
         //字幕のinfoリストを取得
         let request;
+        try{
         request = await gapi.client.youtube.captions.list({
-          part:"snippet", 
-          videoId:this.props.value.toString().split("v=")[1],
+          part: "snippet", 
+          videoId: this.MovieID,
         });
+        } catch(e){
+          const element = <h1>OOPS!!!すいません。この動画は対応していません。おそらくこの動画は字幕に対しての権限がありません。字幕の編集がオンになっているか確認してください。字幕の編集が可能な動画なら使うことができます。</h1>;
+          ReactDOM.render(element, document.getElementById('root'));
+          return null;
+        }
         //確認
         //console.log(request.result.items[0].snippet.language);
         //上記で手に入れた情報のresult.items.snippet.languageがenの場合、en_captionにそのidを代入し、ループから抜け出す
@@ -67,6 +82,7 @@ class YoutubeDisplay extends React.Component {
             return true;
           }
         });
+        //console.log(en_caption);
         //上記のidを用いて字幕の取得を行う
         try{ 
         caption = await gapi.client.youtube.captions.download({
@@ -92,17 +108,32 @@ class YoutubeDisplay extends React.Component {
             }
             TextDataAll.push(TextData[i][1]);
           }
-          console.log(TimeData);
+          //undifinedの削除
           TextDataAll = TextDataAll.filter(v => v);
+          //末尾の!,?,.,,を分離
+          TextDataAll = TextDataAll.map(sentence => {
+            let check=false;
+            let endword="";
+            console.log(i);
+            ["!","?",".",","].forEach(end => {
+              check = sentence.includes(end);
+              endword = end;
+            });
+            if(check==true){
+              return sentence.split(endword)[0]+" "+endword+sentence.split(endword)[1];
+            }
+            return sentence;
+          });
+          //時間データを動画開始からの時間に変更
           TimeData = TimeData.map(item => {
             console.log(item[0]);
             let item0=item.split(",")[0].toString().split(".")[0].split(":");
             let item1=item.split(",")[1].toString().split(".")[0].split(":");
             return [parseInt(item0[0]*360)+parseInt(item0[1],10)*60+parseInt(item0[2],10),parseInt(item1[0]*360)+parseInt(item1[1],10)*60+parseInt(item1[2],10)+1];
           });
-          //console.log(TimeData);
-          //console.log(TextDataAll);
+          //区切ったデータを入れるための配列
           let TextDataSplit = [];
+          //空白で区切り単語単位にする
           TextDataSplit = TextDataAll.map((item) => {
             if(item != undefined){
               return item.split(" ");
@@ -111,33 +142,41 @@ class YoutubeDisplay extends React.Component {
           TextData = [];
           let i = 0;
           //console.log(TextDataSplit[0]);
+          //答えと問題の分離
           for(let i = 0;i<TextDataAll.length;i++){
             let answer ="";
             for(let j = 0; j<TextDataSplit[i].length;j++){
+              do{
               let random = Math.floor(Math.random() * Math.floor(TextDataSplit[i].length));
               answer = TextDataSplit[i][random];
-              //console.log(answer);
+              //下記の項目が含まれている限り、繰り返し続ける
+              }while(answer.includes(":") || answer.includes(",") || answer.includes(".") || answer.includes("?") || answer.includes("!"))
             }
-            //console.log(TextDataAll[i][0]);
+            //undefinedの排除
             if(TextDataAll[i] != undefined){
               TextData.push([TextDataAll[i].split(answer),answer]);
             }
           }
           //console.log(TextData);
-          //setStateする(同時にできるんでない？)
-          this.setState({play: 1});
-          this.setState({start: TimeData[0][0]});
-          this.setState({end: TimeData[0][1]});
-          this.setState({startText: TextData[0][0][0]});
-          this.setState({endText: TextData[0][0][1]});
-          this.setState({answer: TextData[0][1]});
-          this.setState({EndFlag: TimeData.length});
+          //全データをsetStateする
+          this.setState({
+            play: 1,
+            start: TimeData[0][0],
+            start: TimeData[0][0],
+            end: TimeData[0][1],
+            startText: TextData[0][0][0],
+            endText: TextData[0][0][1],
+            answer: TextData[0][1],
+            EndFlag: TimeData.length,
+          });
           //return [TextData,TimeData];
     }
+
     //input内のデータが変わったらstateのuserAnswerを更新する
     Change(content){
         this.setState({userAnswer: content})
     }
+
     //inputが押されたら発火
     Changedata(){
         //valを+1する
@@ -155,22 +194,25 @@ class YoutubeDisplay extends React.Component {
       //EndFlagで終わりの確認
       if(this.state.EndFlag == 0){
         //終わったら結果画面へ
+        //ここのResultChange無いで管理すれば、正解不正解の表示もできそう
         this.props.ResultChange((this.state.correct/TimeData.length)*100)
         this.props.history.push("/result");
         return true;
       }
 
       //次の状態にsetStateする
-      this.setState({start: TimeData[this.val][0]});
-      this.setState({end: TimeData[this.val][1]});
-      this.setState({startText: TextData[this.val][0][0]});
-      this.setState({endText: TextData[this.val][0][1]});
-      this.setState({answer: TextData[this.val][1]});
-      this.setState({userAnswer: ""});
-
-      //console.log(this.state.start);
+      this.setState({
+        start: TimeData[this.val][0],
+        end: TimeData[this.val][1],
+        startText: TextData[this.val][0][0],
+        endText: TextData[this.val][0][1],
+        answer: TextData[this.val][1],
+        userAnswer: "",
+      });
     }
-    //renderをする
+
+
+    //HTMLのレンダリングをする
     render() {
         const opts = {
           height: '390',
@@ -193,8 +235,10 @@ class YoutubeDisplay extends React.Component {
         //正常な場合のリターン
         return (
           <div>
-            <YouTube
-              videoId={this.props.value.toString().split("v=")[1]}
+            <div className = "title2">LearningTube</div>
+            <YouTube 
+              className = "youtube"
+              videoId={this.MovieID}
               opts={opts}
               onEnd={this._onEnd}
             />
@@ -215,6 +259,7 @@ class YoutubeDisplay extends React.Component {
           </div>
         );
     }
+
     //動画がEndした際の処理
     _onEnd(event) {
       // access to player in all event handlers via event.target

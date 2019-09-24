@@ -5,7 +5,10 @@ import "../css/Content.css";
 class Result extends React.Component {
     render(){
         return(
-            <div><p className="result">あなたの正解率は{this.props.result}%です</p></div>
+            <div>
+                <div className = "title3">LearningTube</div>
+                <p className="result">あなたの正解率は{this.props.result}%です</p>
+            </div>
         );
     }
 }
