@@ -62,3 +62,17 @@ body {
 .result {
     font-size: 400%;
 }
+
+.scroll {
+    width: 1000px;
+    height: 300px;
+    font-size: 200%;
+    overflow: auto;
+    right: 0;
+    left: 0;
+    margin: auto;
+}
+
+.answer {
+    color: #FFFF33;
+}

@@ -28,6 +28,10 @@ class YoutubeDisplay extends React.Component {
       this.MovieID = this.props.value.toString().split("v=")[1].substr(0, 11);
       //のちにstateを書き変えるための数値
       this.val = 0;
+      this.startTextAll=[];
+      this.endTextAll= [];
+      this.answerAll = [];
+      this.userAnswerAll = [];
       //state
       //startは動画をスタートする時間
       //endは動画を終わらせる時間
@@ -44,7 +48,6 @@ class YoutubeDisplay extends React.Component {
         answer: "",
         userAnswer: "",
         play:0,
-        EndFlag: 0,
         correct: 0,
       }
       //start = this.state.start;
@@ -167,7 +170,6 @@ class YoutubeDisplay extends React.Component {
             startText: TextData[0][0][0],
             endText: TextData[0][0][1],
             answer: TextData[0][1],
-            EndFlag: TimeData.length,
           });
           //return [TextData,TimeData];
     }
@@ -178,24 +180,30 @@ class YoutubeDisplay extends React.Component {
     }
 
     //inputが押されたら発火
-    Changedata(){
+    async Changedata(){
         //valを+1する
-      this.val=this.val + 1;
-     
-      this.setState({EndFlag: (TimeData.length -1) - this.val});
-      console.log(this.state.EndFlag);
+      
       //答えがあっているかの確認
       if(this.state.userAnswer == this.state.answer){
-          this.setState({correct: this.state.correct+1})
+        console.log(this.state.correct);
+          await this.setState({correct: this.state.correct+1})
           alert("正解です");
       }else{
           alert("正解は"+this.state.answer+"です");
       }
+      this.val=this.val + 1;
+      this.startTextAll.push(this.state.startText);
+      this.endTextAll.push(this.state.endText);
+      this.answerAll.push(this.state.answer);
+      this.userAnswerAll.push(this.state.userAnswer);
+      //this.setState({EndFlag: (TimeData.length -1) - this.val});
+      //console.log(this.state.EndFlag);
       //EndFlagで終わりの確認
-      if(this.state.EndFlag == 0){
+      if(this.val == TimeData.length){
         //終わったら結果画面へ
-        //ここのResultChange無いで管理すれば、正解不正解の表示もできそう
-        this.props.ResultChange((this.state.correct/TimeData.length)*100)
+        console.log(this.state.correct);
+        console.log(TimeData.length);
+        this.props.ResultChange(this.state.correct/TimeData.length*100,this.startTextAll, this.endTextAll, this.answerAll, this.userAnswerAll);
         this.props.history.push("/result");
         return true;
       }

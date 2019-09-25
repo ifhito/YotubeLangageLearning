@@ -13,6 +13,10 @@ class Contents extends React.Component {
     this.state = {
       value: '',
       result: 0,
+      startTextAll: ["this"],
+      endTextAll: [],
+      answerAll: [],
+      userAnswerAll: [],
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
@@ -26,9 +30,14 @@ class Contents extends React.Component {
     this.setState({value: content});
     event.preventDefault();
   }
-  ResultChange(content){
-    this.setState({result: Math.floor(content)});
-
+  ResultChange(content, startText, endText, answer, userAnswer){
+    this.setState({
+      result: Math.floor(content),
+      startTextAll: startText,
+      endTextAll: endText,
+      answerAll: answer,
+      userAnswerAll: userAnswer
+    });
   }
 
   render() {
@@ -39,7 +48,16 @@ class Contents extends React.Component {
               <div  className = "Content">
                 <Route exact path='/'  render={() => <URLIn handlechange={this.handleChange} handleclick={this.handleClick} value = {this.state.value} />} />
                 <Route exact path='/YoutubeDisplay' render={() => <YoutubeDisplay ResultChange={this.ResultChange} value = {this.state.value} />} />
-                <Route path='/result' render={() => <Result result = {this.state.result} />}/>
+                <Route path='/result' 
+                render={() => 
+                <Result 
+                  result = {this.state.result} 
+                  allStartText = {this.state.startTextAll} 
+                  allEndText = {this.state.endTextAll} 
+                  allAnswer = {this.state.answerAll} 
+                  allUserAnswer = {this.state.userAnswerAll}
+                />}
+                />
               </div>
             </div>
             </BrowserRouter>
