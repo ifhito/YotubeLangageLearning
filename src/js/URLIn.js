@@ -11,6 +11,8 @@ export default class URLIn extends React.Component{
         
           <Form inline >
           <div className = "title1">LearningTube</div>
+          <p>https://www.youtube.com/watch?v=TdcegUsjYbc</p>
+          <p>https://www.youtube.com/watch?v=lTbLVp_ayxo</p>
             <FormGroup>
               <FormControl
                 placeholder="Recipient's username"

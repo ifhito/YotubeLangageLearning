@@ -70,11 +70,6 @@ class YoutubeDisplay extends React.Component {
           part: "snippet", 
           videoId: this.MovieID,
         });
-        } catch(e){
-          const element = <h1>OOPS!!!すいません。この動画は対応していません。おそらくこの動画は字幕に対しての権限がありません。字幕の編集がオンになっているか確認してください。字幕の編集が可能な動画なら使うことができます。</h1>;
-          ReactDOM.render(element, document.getElementById('root'));
-          return null;
-        }
         //確認
         //console.log(request.result.items[0].snippet.language);
         //上記で手に入れた情報のresult.items.snippet.languageがenの場合、en_captionにそのidを代入し、ループから抜け出す
@@ -87,11 +82,13 @@ class YoutubeDisplay extends React.Component {
         });
         //console.log(en_caption);
         //上記のidを用いて字幕の取得を行う
-        try{ 
         caption = await gapi.client.youtube.captions.download({
           id: en_caption
-        });}catch(e){
-            console.log(e);
+        });
+        }catch(e){
+          const element = <h1>OOPS!!!すいません。この動画は対応していません。おそらくこの動画は字幕に対しての権限がありません。字幕の編集がオンになっているか確認してください。字幕の編集が可能な動画なら使うことができます。</h1>;
+          ReactDOM.render(element, document.getElementById('root'));
+          return null;
         }
         //caption.bodyをcaptionに入れる(これが字幕の内容)
         caption =caption.body;
