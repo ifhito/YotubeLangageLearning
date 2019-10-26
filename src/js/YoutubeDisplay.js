@@ -16,10 +16,10 @@ class YoutubeDisplay extends React.Component {
     componentDidMount() {
         gapi.client.load('youtube', 'v3',  () => {this.GetCaption();});
       }
-    componentDidCatch(error) {
-      const element = <h1>Hello, world</h1>;
-      ReactDOM.render(element, document.getElementById('root'));
-    }
+    // componentDidCatch(error) {
+    //   const element = <h1>Hello, world</h1>;
+    //   ReactDOM.render(element, document.getElementById('root'));
+    // }
 
     //コンストラクタ
     constructor(props){
@@ -85,7 +85,7 @@ class YoutubeDisplay extends React.Component {
         caption = await gapi.client.youtube.captions.download({
           id: en_caption
         });
-        }catch(e){
+        }catch(e){//エラーの取得
           const element = <h1>OOPS!!!すいません。この動画は対応していません。おそらくこの動画は字幕に対しての権限がありません。字幕の編集がオンになっているか確認してください。字幕の編集が可能な動画なら使うことができます。</h1>;
           ReactDOM.render(element, document.getElementById('root'));
           return null;

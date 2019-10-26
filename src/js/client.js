@@ -13,7 +13,7 @@ class Contents extends React.Component {
     this.state = {
       value: '',
       result: 0,
-      startTextAll: ["this"],
+      startTextAll: [],
       endTextAll: [],
       answerAll: [],
       userAnswerAll: [],
